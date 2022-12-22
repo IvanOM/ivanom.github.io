@@ -1,13 +1,161 @@
-<html lang="en-US" class="js">
+<!doctype html>
+<html lang="pt-BR">
+    <head>
+        <style>
+            body {
+                font-family: 'Courier New', Courier, monospace;
+            }
+            iframe {
+                border: 1px dashed lightgray;
+                width: 100%;
+                height: 800px;
+            }
+            input {
+                padding: 6px 16px;
+            }
+            button {
+                border: none;
+                box-shadow: none;
+                background-color: blueviolet;
+                color: white;
+                padding: 8px 16px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Minha Compra</h1>
 
+        <div id="dados">
+            <input name="" id="cpf" value="", placeholder="CPF">
+            <input name="" id="amount" value="" placeholder="Valor">
+            <button onclick="preview()">PARCELAR MINHA COMPRA</button>
+        </div>
+        <div id="pagar" style="display: none;">
+            <button id="" onclick="pay()">OK, APROVAR PROPOSTA</button>
+        </div>
+        
+        <div id="preview-div"></div>
+        <div id="iframe-container"></div>
+        <div id="preview"></div>
+        <script>
+            function preview() {
+                var amount = document.getElementById('amount');
+                const xhttp = new XMLHttpRequest();
+                xhttp.onload = function() {
+                    var response = JSON.parse(this.response);
+                    if (response["showScript"]) {
+                        renderizaIrame();
+                    }
+                }
+                xhttp.open("POST", "https://api-homolog.parcelex.com.br/public/preview", true);
+                xhttp.setRequestHeader('Content-Type', 'application/json');
+                xhttp.send(JSON.stringify({
+                    apiKey: '6361586ce9acf72d4bdd3e48',
+                    shipping: 0,
+                    totalProductPrice: parseInt(amount.value)
+                }));
+            }
 
+            function renderizaIrame() {
+                var iframeContainer = document.getElementById('iframe-container');
+                var iframe = document.createElement('iframe');
+                iframe.id = 'parcelex-iframe';
+                iframe.src = 'https://app-homolog.parcelex.com.br/checkout/gen'; 
+                iframeContainer.replaceChildren(iframe);
 
-<body class="page-template-default page page-id-156 wp-embed-responsive">
-  <link href='https://dev.actionnetwork.org/css/style-embed-v3.css' rel='stylesheet' type='text/css' />
-  <script src='https://dev.actionnetwork.org/widgets/v3/petition/pet-2?format=js&source=widget'></script>
-  <div id='can-petition-area-pet-2' style='width: 100%'>
-    <!-- this div is the target for our HTML insertion -->
-  </div>
-</body>
+            }
 
+            function showPay() {
+                var dados = document.getElementById('dados');
+                var pagar = document.getElementById('pagar');
+                dados.style.display = false;
+                pagar.style.display = true;
+            }
+
+            function pay() {
+                var iframe = document.getElementById("parcelex-iframe").contentWindow;
+            }
+
+            function postInit() {
+                var amount = document.getElementById('amount');
+                var iframe = document.getElementById("parcelex-iframe").contentWindow;
+iframe.postMessage({
+    "ev":"init",
+    "data":{
+        "apiKey":"6361586ce9acf72d4bdd3e48",
+        "retailerName":"Parcelex",
+        "device":"desktop",
+        "order":{
+            "products":[
+                {
+                    "id":"867",
+                    "name":"Produto Parcelex",
+                    "image":"https://cdn.parcelex.com.br/assets/v3/icons/bag.png",
+                    "url":"https://www.parcelex.com.br",
+                    "category":"234",
+                    "categoryId":"235",
+                    "amount":1,
+                    "value": parseInt(amount.value)
+                }],
+            "shipping":{
+                "city":"Goiania",
+                "complement":"",
+                "number":"1",
+                "state":"GO",
+                "street":"Rua 242",
+                "value":0,
+                "zipCode":"74603190"
+            }},
+            "user":{
+                "cpf":"01234567890",
+                "email":"i.morais@gen.com.br",
+                "phone":"62992814320"
+            }
+        }}, "*")
+        }
+
+            window.addEventListener("message", (ev) => {
+                console.log(ev);
+                switch (ev.data.ev) {
+                    case 'ready':
+                        postInit();
+                        break;
+
+                    case 'approved':
+                        showPay();
+                        break;
+                }
+            }, false);
+        </script>
+        <!-- script>
+            prclx_cfg = {
+                public_api_key: "6361586ce9acf72d4bdd3e48",
+                preview: true,
+                checkout_type: "inline"
+            };
+            !(function(e, t, c, n, r, s, o, a, i) {
+              function p(e, t, c) {
+                return function() {
+                  e[t]._.push([c, arguments]);
+                };
+              }
+              var u = e[n] || {},
+                l = t.createElement(i),
+                _ = t.getElementsByTagName(i)[0];
+              (u[s] = p(u, s, "set")),
+                (u[s]._ = []),
+                (u[r] = p(u, r, "set")),
+                (u[r]._ = []),
+                (u[o] = p(u, o, "set")),
+                (u[o]._ = []),
+                (l.async = !0),
+                (l.src = c[i] || "https://cdn.parcelex.com.br/parcelex.js?key=".concat(c.public_api_key)),
+                _.parentNode.insertBefore(l, _),
+                delete c[i],
+                (u.config = c),
+                (e[n] = u);
+            })(window, document, prclx_cfg, "_prclx", "checkout", "preview", "thankyou", 0, "script");
+          </script -->
+          <!-- End Parcelex -->
+    </body>
 </html>
